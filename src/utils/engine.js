@@ -4,6 +4,9 @@ import { simpleGit } from "simple-git";
 import OpenAI from "openai";
 import "dotenv/config"; // Loads .env file automatically
 
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+
 const git = simpleGit();
 
 if (!process.env.OPENAI_API_KEY) {

@@ -1,0 +1,18 @@
+name: "AI Code Reviewer"
+description: "An AI-powered PR reviewer using OpenAI"
+runs:
+  using: "composite" # <--- This is the magic. It runs raw steps.
+  steps:
+    - name: Install Dependencies
+      run: npm ci
+      shell: bash
+      working-directory: ${{ github.action_path }} # Runs inside the tool folder, not the user's repo
+
+    - name: Run Reviewer
+      run: node ${{ github.action_path }}/review.js
+      shell: bash
+      env:
+        # Pass inputs from the workflow to the script
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        # GITHUB_TOKEN is implicitly available in the environment
+        GITHUB_TOKEN: ${{ github.token }}
