@@ -1,5 +1,9 @@
 name: "AI Code Reviewer"
 description: "An AI-powered PR reviewer using OpenAI"
+inputs:
+  openai_api_key: # <--- 1. We define the input here
+    description: "Your OpenAI API Key"
+    required: true
 runs:
   using: "composite" # <--- This is the magic. It runs raw steps.
   steps:
@@ -12,7 +16,7 @@ runs:
       run: node ${{ github.action_path }}/src/utils/engine.js
       shell: bash
       env:
-        # Pass inputs from the workflow to the script
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        # GITHUB_TOKEN is implicitly available in the environment
+        # 2. We map the INPUT to the ENV VAR here.
+        # (Composite actions cannot read 'secrets' directly!)
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
         GITHUB_TOKEN: ${{ github.token }}
