@@ -9,7 +9,7 @@ runs:
       working-directory: ${{ github.action_path }} # Runs inside the tool folder, not the user's repo
 
     - name: Run Reviewer
-      run: node ${{ github.action_path }}/review.js
+      run: node ${{ github.action_path }}/src/utils/engine.js
       shell: bash
       env:
         # Pass inputs from the workflow to the script
