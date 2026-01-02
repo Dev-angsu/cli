@@ -8,7 +8,7 @@ runs:
   using: "composite" # <--- This is the magic. It runs raw steps.
   steps:
     - name: Install Dependencies
-      run: npm ci
+      run: npm install --production
       shell: bash
       working-directory: ${{ github.action_path }} # Runs inside the tool folder, not the user's repo
 
