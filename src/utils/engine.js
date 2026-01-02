@@ -2,22 +2,13 @@
 
 import { simpleGit } from "simple-git";
 import OpenAI from "openai";
+import { fileURLToPath } from "url";
 import "dotenv/config"; // Loads .env file automatically
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 const git = simpleGit();
-
-if (!process.env.OPENAI_API_KEY) {
-  console.error("❌ Error: OPENAI_API_KEY is missing in .env file.");
-  process.exit(1);
-}
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.AI_BASE_URL || "https://api.z.ai/api/paas/v4/",
-});
 
 // async function getStagedDiff() {
 //   const diff = await git.diff(["--staged"]);
@@ -70,6 +61,15 @@ async function generateReview(diff) {
 
   console.log("🤔 Analyzing changes...");
 
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("❌ Error: OPENAI_API_KEY is missing in .env file.");
+  }
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.AI_BASE_URL || "https://api.z.ai/api/paas/v4/",
+  });
+
   const response = await openai.chat.completions.create({
     model: process.env.AI_MODEL || "glm-4.6v-flash",
     messages: [
@@ -97,7 +97,7 @@ async function generateReview(diff) {
 }
 
 // Main Execution
-async function run() {
+export async function run() {
   try {
     // const diff = await getStagedDiff();
     // 1. SELECT STRATEGY
@@ -139,4 +139,6 @@ async function run() {
   }
 }
 
-run();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  run();
+}

@@ -10,13 +10,15 @@ import chalk from "chalk";
 import ora from "ora";
 import fs from "fs";
 
+import { run as review } from "../src/utils/engine.js";
+
 const program = new Command();
 
 // 1. Metadata
 program
   .name("cli")
   .description("A CLI to demonstrate industry")
-  .version("1.0.0");
+  .version("1.0.1");
 
 // 2. Define a Command
 program
@@ -71,6 +73,15 @@ program
       console.error(error);
       process.exit(1); // Standard error exit code
     }
+  });
+
+// 3. Review Command
+program
+  .command("review")
+  .alias("r")
+  .description("Review staged changes using AI")
+  .action(async () => {
+    await review();
   });
 
 // 6. Parse Arguments
