@@ -139,6 +139,11 @@ export async function run() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+const currentFile = fileURLToPath(import.meta.url);
+// Check if run directly (robust against symlinks/path variations in CI)
+if (
+  process.argv[1] === currentFile ||
+  process.argv[1].endsWith("src/utils/engine.js")
+) {
   run();
 }

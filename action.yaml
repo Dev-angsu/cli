@@ -13,7 +13,7 @@ runs:
       working-directory: ${{ github.action_path }} # Runs inside the tool folder, not the user's repo
 
     - name: Run Reviewer
-      run: node ${{ github.action_path }}/src/utils/engine.js
+      run: node "${{ github.action_path }}/src/utils/engine.js"
       shell: bash
       env:
         # 2. We map the INPUT to the ENV VAR here.
