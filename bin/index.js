@@ -11,6 +11,7 @@ import ora from "ora";
 import fs from "fs";
 
 import { run as review } from "../src/utils/engine.js";
+import { copyCode } from "../src/commands/copy.js";
 
 const program = new Command();
 
@@ -82,6 +83,17 @@ program
   .description("Review staged changes using AI")
   .action(async () => {
     await review();
+  });
+
+// 4. Copy Code Command
+program
+  .command("copycode")
+  .alias("cp")
+  .description("Copy codebase context to clipboard for LLMs")
+  .option("-o, --output <file>", "Output result to a file instead of clipboard")
+  .option("-d, --dry-run", "Dry run: only list files and stats")
+  .action(async (options) => {
+    await copyCode(process.cwd(), options);
   });
 
 // 6. Parse Arguments
