@@ -30,25 +30,42 @@ async function getPRDiff() {
   const octokit = github.getOctokit(token);
 
   const context = github.context;
-  const prNumber = context.payload.pull_request?.number;
 
-  if (!prNumber) {
-    throw new Error(
-      "❌ No Pull Request found in context. Are you running this on push?"
-    );
+  if (context.payload.pull_request) {
+    const prNumber = context.payload.pull_request.number;
+    // Fetch the diff specifically for PR
+    const { data: diff } = await octokit.rest.pulls.get({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      pull_number: prNumber,
+      mediaType: {
+        format: "diff", // Ask GitHub to return the raw diff text
+      },
+    });
+    return diff;
+  } else if (context.eventName === "push") {
+    const { before, after, repository } = context.payload;
+
+    let base = before;
+    // Handle new branch creation (before commit is zeroed out)
+    if (before === "0000000000000000000000000000000000000000") {
+      base = repository.default_branch;
+    }
+
+    // Compare head commit against previous commit
+    const { data: diff } = await octokit.rest.repos.compareCommits({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      base,
+      head: after,
+      mediaType: { format: "diff" },
+    });
+    return diff;
   }
 
-  // Fetch the diff specifically
-  const { data: diff } = await octokit.rest.pulls.get({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    pull_number: prNumber,
-    mediaType: {
-      format: "diff", // Ask GitHub to return the raw diff text
-    },
-  });
-
-  return diff;
+  throw new Error(
+    "❌ Unsupported event type. Only PRs and Pushes are supported."
+  );
 }
 
 async function generateReview(diff) {
@@ -120,13 +137,23 @@ export async function run() {
       const octokit = github.getOctokit(token);
       const context = github.context;
 
-      await octokit.rest.issues.createComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        issue_number: context.payload.pull_request.number,
-        body: review,
-      });
-      console.log("✅ Review posted to GitHub PR!");
+      if (context.payload.pull_request) {
+        await octokit.rest.issues.createComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          issue_number: context.payload.pull_request.number,
+          body: review,
+        });
+        console.log("✅ Review posted to GitHub PR!");
+      } else if (context.eventName === "push") {
+        await octokit.rest.repos.createCommitComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          commit_sha: context.payload.after,
+          body: review,
+        });
+        console.log("✅ Review posted to Commit!");
+      }
     } else {
       // Locally, we just print it
       console.log("\n================ 🤖 AI CODE REVIEW ================ \n");
