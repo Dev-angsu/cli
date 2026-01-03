@@ -143,7 +143,8 @@ const currentFile = fileURLToPath(import.meta.url);
 // Check if run directly (robust against symlinks/path variations in CI)
 if (
   process.argv[1] === currentFile ||
-  process.argv[1].endsWith("src/utils/engine.js")
+  process.argv[1].endsWith("src/utils/engine.js") ||
+  process.argv[1].endsWith("review-code")
 ) {
   run();
 }
